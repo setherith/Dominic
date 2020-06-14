@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using SharpDX.XInput;
 
@@ -8,28 +9,34 @@ namespace Dominic
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine("Checking controllers...");
 
-            var controller = new Controller(UserIndex.Two);
+            var controller = new Controller(UserIndex.One);
 
-            Console.WriteLine(controller.IsConnected);
-            Console.WriteLine(controller.UserIndex);
-
-            //controller.SetVibration(new Vibration()
-            //{
-            //    LeftMotorSpeed = 35000,
-            //    RightMotorSpeed = 35000
-            //});
-
-            var batt = controller.GetBatteryInformation(BatteryDeviceType.Gamepad);
-            Console.WriteLine(batt.BatteryLevel);
-            Console.WriteLine(batt.BatteryType);
-
-            while (true)
+            if (controller.IsConnected)
             {
-                var state = controller.GetState();
-                Console.WriteLine(state.Gamepad.Buttons);
-                Thread.Sleep(100);
+                var batt = controller.GetBatteryInformation(BatteryDeviceType.Gamepad);
+                Console.WriteLine(batt.BatteryLevel);
+                Console.WriteLine(batt.BatteryType);
+
+                int packet = 0;
+
+                while (true)
+                {
+                    var state = controller.GetState();
+
+                    if (state.PacketNumber != packet)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Buttons: " + state.Gamepad.Buttons);
+                        Console.WriteLine("Left X, Y: " + state.Gamepad.LeftThumbX + "," + state.Gamepad.LeftThumbY);
+                        Console.WriteLine("Right X, Y: " + state.Gamepad.RightThumbX + "," + state.Gamepad.RightThumbY);
+                        Console.WriteLine("Triggers R, L: " + state.Gamepad.RightTrigger + "," + state.Gamepad.LeftTrigger);
+                    }
+
+                    packet = state.PacketNumber;
+                    Thread.Sleep(50);
+                }
             }
         }
     }
